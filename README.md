@@ -2,7 +2,7 @@
 
 Create Secure banking system web application with Spring security, Go-lang and Django, The application contains both mobile money transaction, Bill payment and cryptocurrency trading.
 
-- This is a prototype of the application
+### This is a prototype of the application
 > Developed api endpoints to manage the users Global Digital Payment System and crypto trading, supporting both local currency operations and blockchain integration for cryptocurrency trading. Implemented features for platform and P2P crypto trading, integrating blockchain technology with the potential for future currency exchange functionalities.
 # Mobile banking functionalities, Bill Payment and Crypto Trading.
 
