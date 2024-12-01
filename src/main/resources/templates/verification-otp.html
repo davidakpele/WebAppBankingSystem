@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One-time password</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            padding: 20px;
+            background-color: #ffffff;
+            margin: 0 auto;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #010101dd;
+            color: #ffffff;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #888888;
+            border-top: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h3>One-time password</h3>
+        </div>
+        <div class="content">
+            <h3>2 Factor Authentication Access Code</h3>
+            <p>A sign in attempt requires further verification because we did not recognize your device. To complete the sign in, enter the verification code on the unrecognized device</p>
+            <p>Verification code: <strong th:text="${otp}"></strong></p>
+            <p>If you did not attempt to sign in to your account, your password may be compromised. Visit <span th:text="${resetPassword}"></span> to create a new, strong password for your Artex Network account</p>
+            <p>If you'd like to automatically verify devices in the future, consider enabling two-factor authentication on your account. Visit <span th:text="${configuringTwoFactorAuthentication}"></span> to learn about two-factor authentication.</p>
+            <p>If you decide to enable two-factor authentication, ensure you retain access to one or more account recovery methods. See <span th:text="${configuringTwoFactorAuthenticationRecoveryMethods}"></span> in the Artex Network Help.</p>
+            <p>Thank,<br/>The Artex Network Team</p>
+        </div>
+        <div class="footer">
+            <p>If you have any questions, please contact support.</p>
+        </div>
+    </div>
+</body>
+</html>
