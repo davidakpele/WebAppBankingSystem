@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit Notification</title>
+    <style>
+        /* Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background-color: #333333;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #f0b90b; /* Gold Accent */
+        }
+
+        /* Content */
+        .content {
+            padding: 20px;
+        }
+
+        .content p {
+            margin: 10px 0;
+            font-size: 16px;
+            line-height: 1.6;
+            color:#fff !important;
+        }
+
+        .highlight {
+            color: #f0b90b; /* Gold Accent */
+            font-weight: bold;
+        }
+
+        .transaction-details {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #262626;
+            border-radius: 4px;
+        }
+
+        .transaction-details p {
+            margin: 5px 0;
+            font-size: 14px;
+            color:#fff !important;
+        }
+
+        /* Button */
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f0b90b; /* Gold Accent */
+            color: #000000;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: #e0a508;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #333333;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: #bbbbbb;
+            border-top: 1px solid #444444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Email Header -->
+        <div class="header">
+            <h1>Deposit Successful</h1>
+        </div>
+
+        <!-- Email Content -->
+        <div class="content">
+            <p>Hello <span th:text="${username}">User</span>,</p>
+            <p>We are pleased to inform you that your deposit of &#8358;<span class="highlight" th:text="${amount}"></span> has been processed successfully. Here are the transaction details:</p>
+            
+            <div class="transaction-details">
+                <p><strong>Transaction ID:</strong> <span th:text="${transactionId}"></span></p>
+                <p><strong>Date & Time:</strong> <span th:text="${transactionTime}"></span></p>
+                <p><strong>New Balance: &#8358;</strong> <span class="highlight" th:text="${totalBalance}"></span></p>
+            </div>
+            <p>If you have any questions, feel free to <a href="#" style="color: #f0b90b !important;">contact support</a>.</p>
+        </div>
+
+        <!-- Email Footer -->
+        <div class="footer">
+            &copy; 2024 E-Wallet Platform. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

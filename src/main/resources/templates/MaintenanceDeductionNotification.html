@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #050505;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content h2 {
+            color: #0d0d0d;
+        }
+        .content p {
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        .button {
+            display: inline-block;
+            background-color: #060606;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            Monthly Maintenance Fee Deduction
+        </div>
+        <div class="content">
+            <h2>Dear <span th:text="${firstName}"></span>,</h2>
+            <p>We hope this message finds you well. This is to inform you that a deduction of 
+               <strong> <span th:text="${amount}"></span></span></strong> has been made from your wallet balance as part of our monthly service maintenance fee.</p>
+            <p>Your current wallet balance is <strong th:text="${balance}"></strong>.</p>
+            <p>This maintenance fee helps us ensure the seamless operation of our platform and the continuous improvement of our services.</p>
+            <p>If you have any questions or concerns, please don't hesitate to contact our support team by clicking the button below:</p>
+            <a href="mailto:support@pesco.com" class="button">Contact Support</a>
+            <p>Thank you for your understanding and continued trust in our services.</p>
+            <p>Best regards,<br>The Support Team</p>
+        </div>
+        <div class="footer">
+            &copy; 2024 Pesco Platform. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
