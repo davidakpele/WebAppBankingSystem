@@ -1,0 +1,74 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/pesco_users_db
+    username: root
+    password: 
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    generate-ddl: true
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: akpeledavidprogress@gmail.com
+    password: hmzdtwrpkwjmcvcv
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+
+
+jwt:
+  secret-key: lcBCilFEQT0SWEZcCQhGx2UaCZcxPx4bYBfrGM0DVKDJycK2UL4dDJqAkZ8r4IBQxSa3S2wlTVlnVVzvzP5sfzPtLUournmEY2N3ZGVnQ1BtWEF0anZ0aDNLNHJhaHh9IkFVaj0PXA==
+
+iot:
+  network:
+    customer:
+      service:
+        email: artexnetworkservice@gmail.com
+
+file:
+  upload-dir: src/main/resources/static/image
+
+web:
+    resources:
+      static-locations: classpath:/static/
+      
+flutterwave:
+  public-key: FLWPUBK_TEST-9f86808391a0bef01975c332a2782e5a-X
+  secret-key: FLWSECK_TEST-1eee27f63b4dc12394dbf5c7badaa39e-X
+  url: https://api.flutterwave.com/v3
+
+paystack:
+  api:
+    url: https://api.paystack.co
+    key: sk_test_aaa8ff310f15a0ad5f23950a584f8942cbdf02aa
+
+auth-service:
+  base-url: http://localhost:8080
+
+revenue-service:
+  base-url: http://localhost:8083
