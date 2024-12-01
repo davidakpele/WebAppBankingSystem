@@ -39,7 +39,15 @@ Create Secure banking system web application with Spring security, Go-lang and D
 ## Introduction
 
 > Spring boot is an open-source MVC framework built in java. This framework includes robust Rest API, form handling and validation mechanisms, security. I Developed a secure and efficient Global Bank API to facilitate digital transactions and blockchain integration.
-
+> Skills Demonstrated:
+   - Spring Security [Authentication, Authorization and Verification]
+   - Go Lang [WebSocket Crypto Trading]
+   - Python [Django for Admin]
+   - Database [PostgreSQL, MySQL & MongoDB]
+   - Payment gateway [Stripe API & Flutter API],
+   - Docker [Containerization]
+   - RabbitMQ [MQTT & AMQP]
+   - Delopment: [AWS].
 > Break down of the application workflow are:
 
 ## Goals
@@ -119,12 +127,12 @@ Create Secure banking system web application with Spring security, Go-lang and D
         -- Create this order involve some few steps, the payload look like this example:
 ```sh
 {
-  "userId":"1",
+  "userId":"27920132732",
   "asset":"bitcoin",
   "type":"SELL",
   "price":"1953.50",
-  "amount":"0.10", 
-  "filledAmount":"1953.50",
+  "amount":"10.10", 
+  "filledAmount":"19753.50",
   "status":"OPEN",
   "currency":"ngn",
   "bankId":"3"
@@ -133,7 +141,7 @@ Create Secure banking system web application with Spring security, Go-lang and D
  * Above you see placing sell order payload looks like but note originally the bankId represent the account details buyer will use to make payment, so in most times it usually bankdetails and the payloads look like this below.
  ```sh
 {
-  "userId":"1",
+  "userId":"27920132732",
   "asset":"bitcoin",
   "type":"SELL",
   "price":"1953.50",
