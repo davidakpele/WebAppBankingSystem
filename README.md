@@ -1,195 +1,40 @@
-# Global Banking System Software With Spring Security, Go-lang and Django
+# Authentication Service 
 
-Create Secure banking system web application with Spring security, Go-lang and Django, The application contains both mobile money transaction, Bill payment and cryptocurrency trading.
+- Built the authentication, authorization and verification with Spring Boot & Spring Security and mysql database. The demo frontend is built using React js.
 
-### This is a prototype of the application
-> Developed api endpoints to manage the users Global Digital Payment System and crypto trading, supporting both local currency operations and blockchain integration for cryptocurrency trading. Implemented features for platform and P2P crypto trading, integrating blockchain technology with the potential for future currency exchange functionalities.
-# Mobile banking functionalities, Bill Payment and Crypto Trading.
-
-##Created Complete Global banking system with spring boot, spring rest, spring data JDA, spring session and so on.
-
-[![N|Solid](https://cldup.com/dTxpPi9lDf.thumb.png)](https://nodesource.com/products/nsolid)
-
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 ## Table of Contents
 * **Introduction**
 * **Quick Start**
-* **Authentication**
-* **Authorization**
-* **User Verification**
-* **Two-Factor Authentication**
-* **Service Registry**
-* **Security Configuration**
+* **Folder Structure**
+* **Application Configuration**
 * **JWT Configuration**
-* **User Wallet Transactions**
-* **Crypto Trading**
-* **Creating Crypto Order [BUY & SELL] & [Wallet to Wallet trade]**
-* **Cryto History log**
-* **Wallet History log**
-* **Notification handler**
+* **Security Configuration**
+* **RabbitMQ Configuration**
+* **RabbitMQ Message Producer**
+* **Error Handling**
 * **File Handling**
-* **Message broker with RabbitMq**
-* **Email Configuration**
-* **Crons schedule for monthly maintaince fees**
-* **Payment gateways with Paystack and flutterwave API Integration**
-* **Middleware on IpAddress Interceptor [For transaction monitor on things like {High-Volume-Or-Frequent-Transactions, Inconsistent-Behavior, High-Risk-Region, Same-IpAddress-Transaction-5mins-After-Deposit, From-Blacklisted-Address}]**
-* **Cors Configuration**
-* **Exception Handling**
-
+* **Data Transfer Objects**
+* **Rest API Controller**
+* **Repositories**
+* **Services**
+* **Responses**
+* **Contributing**
+* **Testing**
+  
 ## Introduction
-
-> Spring boot is an open-source MVC framework built in java. This framework includes robust Rest API, form handling and validation mechanisms, security. I Developed a secure and efficient Global Bank API to facilitate digital transactions and blockchain integration.
-> Skills Demonstrated:
-   - Spring Security [Authentication, Authorization and Verification]
-   - Go Lang [WebSocket Crypto Trading]
-   - Python [Django for Admin]
-   - Database [PostgreSQL, MySQL & MongoDB]
-   - Payment gateway [Stripe API & Flutter API],
-   - Docker [Containerization]
-   - RabbitMQ [MQTT & AMQP]
-   - Delopment: [AWS].
-> Break down of the application workflow are:
-
-## Goals
-- What are goals of the Global banking system?
-
-1. The application contains both mobile money transaction and cryptocurrency trading.
-    * To use this application, Users need to sign-up, get verified before sign-in.
-    * This application or platform focus on ten major crypto coin these are [bitcoin, solana, ethereum, tether, binancecoin, usd-coin, ripple, staked-ether, dogecoin and tron].
-    * Each of these coin are unique and after user authentication, authorization and verification, user will be assign wallet key address to each of these coin to manage his transactions or crypto trade.
-    * User will also be given a naira wallet account where he can deposit and withdraw or trade by buying crypto asset with his naira fund.
-2. User Wallet or eWallet or You can call it Naira Wallet, this hold local currency data, currency like naira, dollar or euro but in this particalar application i used naira, Hopefully in future we can implement currency swapping or exchange.
-    > This ables users to deposit from their bank to the platform wallet.
-    > They can withdraw/transfer from their wallet to another user wallet or transfer to bank account.
-    > They can view the wallet history [deposit, withdraw, credit],
-    > There are many services User can do aside from deposit and withdraw, User can aslo pay bills like:
-    * Eletricity bills, 
-    * Buy Airtime and Airtime data bundle like [MTN, GLO, ETISALAT, AIRTEL].
-    * pay for cable like [DSTV, GO TV, STAR TIME].
-    * BUY and SELL GIFT CARD
-    * User can Deposit or fund betting wallet by using his betting platform ID.
-    * User can withdraw or transfer money to bank like first bank, union bank outside the platform.
-    * User can transfer money money to another user in same platform and all he need is username of that user.
-    > Users can view service history.
-    > For security reasons, use have transfer pin or password to complete this actions above. User have login successfully, Account maybe set to 2FA-Authentication but tranfering or taking money from wallet need additional security which is why i add wallet locked down password.
-    > When user deposit on his wallet, notification is sent with rabbitmq broker process for actions and new balance record.
-    > When user withdraw or transfer money to another users within the platform, notifications is send to both users emails, sender receieve debit alert notification and new record, and recipient receive credit alert notification wit the new wallet balance record.
-    - Middleware on IpAddress Interceptor was also implemented here on wallet transactions such as:,
-        * Large Transactions (High Amount)
-            > Condition: Any transaction that exceeds a predefined threshold amount set by the platform.
-            > Reason: Large transactions can be suspicious, especially if they are inconsistent with the user’s history.
-            > Example: A transfer exceeding N25,000,000.00 or the equivalent in cryptocurrency might be flagged for review.
-        * Multiple Transactions in a Short Timeframe (High Frequency)
-            > Flag if more than 5 transactions in 10 minutes or total amount exceeds threshold".
-            > Condition: If a user conducts multiple large transactions within a short period (e.g., several large transfers within an hour or day).
-            > Reason: High-frequency transactions, especially large ones, could indicate potential money laundering or illegal activity.
-            > Example: More than three transfers exceeding N10,000,000.00 each within a 24-hour period.
-        * Transactions Involving High-Risk Regions or Countries
-            > Condition: Transactions sent to or received from wallet addresses associated with high-risk regions or countries (e.g., countries under sanctions or with a high risk of money laundering).
-            > Reason: To comply with international AML regulations and avoid transactions with sanctioned entities.
-            > Example: A user transferring a significant amount of cryptocurrency to a wallet known to belong to a high-risk jurisdiction.
-        * Transactions Between Accounts Using the Same IP Address
-            > Condition: Multiple accounts executing transactions from the same IP address within a short period.
-            > Reason: This could be a sign of suspicious activity such as a single entity controlling multiple accounts (a practice called "sybil attack").
-            > Example: Three different accounts transferring funds to one another, all initiated from the same IP address within an hour.
-        * Transactions Associated with Newly Created or Unverified Wallets
-            > Condition: Transactions to or from wallets that are newly created or have not been verified.
-            > Reason: New or unverified wallets may be used for fraudulent activities or scams.
-            > Example: A user sending funds to a wallet that was created within the last hour.
-        * Deposits Followed by Immediate Transfers
-            > A user makes a deposit into their account and immediately transfers the entire amount elsewhere.
-            > This behavior could indicate attempts to obfuscate the origin of the funds (layering phase of money laundering).
-            > Example: A deposit of N5,000 followed by an immediate transfer of N4,950 within minutes.
-        * Transactions From Blacklisted Wallet Addresses:
-            > Check if trying to withdraw from blacklist wallet even though, user can not login, but this has to also be check for security reasons.
-            > Condition: Transactions involving wallet addresses that are blacklisted or associated with suspicious or illegal activity.
-            > Reason: To prevent and trace interactions with entities known for fraud, hacking, or illegal trade.
-            > Example: A user receiving funds from a wallet identified as part of a scam operation.
-        * InconsistentBehavior:
-            > Criteria 1: Check for sudden large transactions compared to the user's typical behavior
-            > Threshold: if a transaction is more than 5 times the average amount
-            > Check if there are too many transactions in a short period (e.g., > 10 in 24 hours)
-            > Check for transactions from different IP addresses (suggesting multiple locations or devices)
-            > Check for unusual transaction types (e.g., frequent withdrawals)
-3. Crypto Trading.
-    * Platform trading: Users can trade crypto with another user in same platform, How it work?
-        - Seller user want to sell crypto or bitcoin to another user in same platform, Seller user only need the buyer username, enter amount, select the crypto network like bitcoin or ethereum depending the network buyer depend and in the form amount validate and check coin market value from "Gecko" api service providing the currency seller is checking form, 
-            * Seller want to sell bitcoin of 0.10 to buyer in usd or naira, when user enters the amount of coin want to sell, it automatically fetch coin value from Gecko api service with assetid of "btc" and currency of "usd".
-        - When the form is submitted, spring boot validate the data payloads first-> check the user is authorized to access that endpoin, second-> check if user exist in the database, third-> check if the user exist check if the user is the actual owner of the wallet he is attempting on making a trade, meaning-- if the bitcoin wallet belongs to the seller. fourth-> check if user have enough balance from the crypto wallet to make that trade, meaning-- check if user bitcoin wallet has 0.10 balance or more to sell to the buy.
-        - Second Backend Validation is checking if Buyer has enough naira fund to buy the bitcoin from the seller else inform the buyer that he do not have enough fund to purchase the bitcoin, this email notification does not include the seller, The seller will only be notify that buyer has cancel the order request but if buyer has enough fund then deduct seller bitcoin wallet and credit buyer wallet and deduct the amount from Buyer NAIRA WALLET meaning "BUYER PAYING FOR THE BITCOIN HE BOUGHT" and credit seller naira wallet.  
-        - Platform fees: in between that exchange and making successful trade, platform has a service manager responsable for making charges based on the amount or volume of coin seller is seller or buyer is buying, the deduction can be 0.25% or 0.5%.
-            * Question is "What are you charge on, Crypto or from naira currency?
-            - well in my case and this user to user platform trade, i choose naira or call it local currency, so i charged seller from the buyer payment going to seller naira wallet. 
-            > Seller want to sell 0.10 bitcoin to buyer at N5,000 so buyer is going paying seller 5k, platform charge is inside this 5k, example is 0.50% from 5k = N4,975.
-    * P2P Trading: This allow users trade directly with each other,
-        -- This Aspect involves user listing their assets, meaning Users can create Order without having or knowing actual buyer or sell. example of this is:
-        > User can go to p2p trade, see listing orders both buy and sell, though in my frontend, i separate them with mapping, ["All" | "Buy" | "Sell"] this help users to navigate to a specific section can either see all the orders or only buy orders or only sell orders. 
-        -- Create this order involve some few steps, the payload look like this example:
-```sh
-{
-  "userId":"27920132732",
-  "asset":"bitcoin",
-  "type":"SELL",
-  "price":"1953.50",
-  "amount":"10.10", 
-  "filledAmount":"19753.50",
-  "status":"OPEN",
-  "currency":"ngn",
-  "bankId":"3"
-}
-```
- * Above you see placing sell order payload looks like but note originally the bankId represent the account details buyer will use to make payment, so in most times it usually bankdetails and the payloads look like this below.
- ```sh
-{
-  "userId":"27920132732",
-  "asset":"bitcoin",
-  "type":"SELL",
-  "price":"1953.50",
-  "amount":"0.10", 
-  "filled_amount":"1953.50",
-  "status":"OPEN",
-  "currency":"ngn",
-  "bank_details":{
-    "account_holder_name":"Peter Donald",
-    "account_number":"12345678901",
-    "bank_name":"City Bank"
-  }
-}
-```
-
-* But because user have naira wallet and also has add_bank enpoint and ui where user can add their details which is connected to paystack for user bank details verification, meaning user must provide a valid account details but if user hasn't add any bank yet and tries to sell, error will return telling user to provide bankdetails id which means must need to add bank details to this platform before making sell trading. 
-
-* When user submit he post request to create sell order on p2p trade, i create order service matcher, this service takes the user post request and check order table to see if there is any BUY order that matches this SELL order, meaning- check if other users has created any BUY order that matches with "amount, price, asset and currency" if No match then substract the amount of coin bitcon seller bitcoin wallet and save order in order table, set order status to OPEN but if there is any match, it automatically fill the order and sell notifications to both user, for seller, it inform the seller that this order that was created has found buyer match and has also send the buyer payment receipt to complete the payment, the order is also save in order table, status is now "PAYMENT_PENDING" and now escrow service has HOLD that orderId, sellerId and buyerId. when seller receive payment from buyer, it request to update order status from "PAYMENT_PENDING" to "PAYMENT_VERIFIED", when escrow service sees this order is status have be updated then move the crypto coin amount to the buyer wallet or lets say credit the buyer crypto wallet.
-
-### WHAT IS ESCROW?
-
-> An escrow is a financial arrangement where a third party holds and regulates the payment of funds or assets between two transacting parties. It ensures that both the buyer and seller fulfill their obligations before the transaction is completed. Escrow is commonly used in large transactions or scenarios where trust between parties is low, such as real estate deals, online purchases, or certain cryptocurrency transactions.
-
-* So in this crypto trade, escrow service hold the crypto when a seller place sell order with or without a buyer, if no buy yet, buyerid column on that order will be empty till a buyer place order to buy ther asset then update the escrow table "Order row->buyId" so the escrow can use to credit the buyer when seller confirm payment.
-
-* This application has component class that runs every 5 seconds specifically for payment checking, this class check order, escrow table if Seller has updated order status to "PAYMENT_VERIFIED", if any order has been found seller made an update it automatically release the crypto to buyer wallet and also send notification to both users, this service can handle hundreds and thusands of update in a seconds.
--  Why this service?
-    > It also the platform admin to reduce stress of monite payment update and releasing assets to users ON TIME. Imagine a human being responsible to manage this task, in a small plat trade yes he can but nobody want to remain small in market, as the number of users increases, this aspect because more difficult for a mediator to manage. platform can have hundreds on order and hundres of updates same time from different users, anything finanical market delivering time space matters, buyers can not wait 24hrs not be credited because platform mediator has many order to confirm before releasing assets. I leverage java strength to build task manager or cros jobs.
-    
-4. Wallet to wallet trade: This involves trading with user with their wallet key address but in this application only when user want to recieve or sell to EXTERNAL user you need wallet address.
-    * If Our user want to sell to external user outside this platform, he needs other user wallet address. this part was NOT FULLY COMPLETED because i needed to integrate Blockchain technology but i stopped at when developer will need to integrate the blockchain and verify success trade and substract amount from  seller wallet.
-
-    > Please noted: if to be complete, please add platform fees service.
-
-5. Notification and History: On every action made, action in ping and history save for local concurrency transaction or cryptocurrency trading, User can fetch or view their histories both combine history [crypto and local currency] or Just local currency Banking history.
-
-6. File Handling, On User profile, user can update profile picture and image path will be save in the database, image will be moved to resourses/static/image/*
-    * Note:  When user update profile picture, system rename the image name to userId example is "10121.png" The reason is because i want to want when ever user upload profile image system hold bush of useless images, no problem but i consider them a trash. so if image with this Id name 10121 exist before, remove and replace with the new user profile image and update the database pathurl,
-7. Email Configuration: This is want to i use most in this application to handle notifications, from sign-up, to change of password, 2FA-authentication sign-in, forget password, transaction notifications, payment notifications and so on.
-8. FlutterWave and Paystack API Integration  where carefully integrated from resourses/application.yml file.
-> This help user to verify bank account number, deposit fund to user wallet, withdraw fund from wallet to banks and pay bills.
+> Spring Boot Security provides mechanisms to secure applications and APIs or endpoints. Both JWT (JSON Web Tokens) and OAuth2 are widely used for authentication and authorization. In this project we take advantage of this mechanisms spring boot provides us.
 
 ## Quick Start
+> This Authentication service Handles User authentication and authorization which enables them the access to operate on the entire application e.g "Deposit money into their wallet which need to be authenticated with a specific user details, Transfer to bank or another user in the platform using their username, pay bills and trade crypto."
+- How this work is User sign-Up with require detials ['firstname, lastname, email, username, password, telephone, gender']
+- Request will validate and Store user into the database and send "Account Verification" email notification message with RabbitMQ message broker/message Queue in asynchronously compact.
+- If user verify their account, the can login and login success process generate jwt token and return user data like "Username, UserId and User Jwt token"
+- Note every users is treated Uniquely and that makes jwt Unique to user and also makes it easy to authentication with spring security Authentication testing against the username in the encryted in the jwt and username username by pass or any datails user may pass along with their request.
+- This service also enable users to turn on 2Fa-Authentication process for additional security to their wallet so every time user try to login, OTP Keys will be send to user name from the database and once user provide the OTP key and verified user will be process login success.
+- This Service enable user to change password when logged-In, reset password if forgotten, change profile by uploading profile picture.
+- Forget password process has RabbitMQ message process, including 2FA-Authentication, Account Verification.
 
-1. Clone the repo: git clone **https://github.com/davidakpele/securewallet**
-
-
-## Folder Structure
+# Folder Structure 
 ```
 C:.
 ├───.mvn
@@ -198,59 +43,59 @@ C:.
 │   ├───main
 │   │   ├───java
 │   │   │   └───com
-│   │   │       └───iot
-│   │   │           └───authentication
-│   │   │               ├───blockchain
-│   │   │               ├───config
-│   │   │               ├───controllers
+│   │   │       └───pesco
+│   │   │           └───authentication      
+│   │   │               ├───configurations  
+│   │   │               ├───controllers     
 │   │   │               ├───dto
-│   │   │               ├───enum_
-│   │   │               ├───exceptions
+│   │   │               ├───enums
+│   │   │               ├───MessageProducers
+│   │   │               │   └───requests
+│   │   │               ├───micro_services
 │   │   │               ├───middleware
 │   │   │               ├───models
-│   │   │               │   └───inc_
 │   │   │               ├───payloads
 │   │   │               ├───properties
-│   │   │               ├───repository
+│   │   │               ├───repositories
 │   │   │               ├───responses
-│   │   │               ├───services
-│   │   │               ├───ServicesImplementations
-│   │   │               └───util
+│   │   │               ├───security
+│   │   │               ├───serviceImplementations
+│   │   │               └───services
 │   │   └───resources
-│   │       ├───META-INF
 │   │       ├───static
-│   │       │   └───image
+│   │       │   ├───css
+│   │       │   ├───image
+│   │       │   └───js
 │   │       └───templates
 │   └───test
 │       └───java
 │           └───com
-│               └───iot
+│               └───pesco
 │                   └───authentication
-│                       └───scheduler
 └───target
     ├───classes
     │   ├───com
-    │   │   └───iot
+    │   │   └───pesco
     │   │       └───authentication
-    │   │           ├───blockchain
-    │   │           ├───config
+    │   │           ├───configurations
     │   │           ├───controllers
     │   │           ├───dto
-    │   │           ├───enum_
-    │   │           ├───exceptions
+    │   │           ├───enums
+    │   │           ├───MessageProducers
+    │   │           │   └───requests
+    │   │           ├───micro_services
     │   │           ├───middleware
     │   │           ├───models
-    │   │           │   └───inc_
     │   │           ├───payloads
     │   │           ├───properties
-    │   │           ├───repository
+    │   │           ├───repositories
     │   │           ├───responses
-    │   │           ├───services
-    │   │           ├───ServicesImplementations
-    │   │           └───util
-    │   ├───META-INF
+    │   │           ├───security
+    │   │           ├───serviceImplementations
+    │   │           └───services
     │   ├───static
-    │   │   └───image
+    │   │   ├───css
+    │   │   └───js
     │   └───templates
     ├───generated-sources
     │   └───annotations
@@ -266,7 +111,260 @@ C:.
     ├───surefire-reports
     └───test-classes
         └───com
-            └───iot
+            └───pesco
                 └───authentication
-                    └───scheduler
+
 ```
+
+## Application Configuration 
+> This ApplicationConfiguration class is a Spring Boot configuration class that sets up essential components for handling user authentication and password encoding. Here's a breakdown of what each part does:
+
+####  We Have Four ```@Bean``` define in this class.
+- Class-Level Annotations
+     - ```@Configuration:``` Marks this class as a source of Spring Beans for the application context. Spring will scan and register the beans defined here.
+     - ```@RequiredArgsConstructor:``` Automatically generates a constructor for any final fields, in this case, UsersRepository. This makes dependency injection more concise.
+     -  Bean Definitions
+         * **UserDetailsService  ```@Bean method```**
+```
+@Bean
+public UserDetailsService userDetailsService() {
+    return username -> {
+        Optional<Users> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isPresent()) {
+            return userOptional.get();
+        } else {
+            return new org.springframework.security.core.userdetails.User(
+                    username,
+                    "",
+                    Collections.emptyList());
+        }
+    };
+}
+```
+* **Purpose:** Provides a way for Spring Security to fetch user details by username during authentication.
+* **How It Works:**
+    > Calls ```userRepository.findByUsername(username)``` to retrieve user details from the database.<br/>
+    > If a user exists, it returns the Users <br/>
+    > If no user is found, it returns a default User object with the provided username and empty password ("") and then No granted authorities (Collections.emptyList()) which means User can't get access the application because user doesn't exist.
+    * **AuthenticationProvider ```@Bean method```**
+```
+@Bean
+public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+    authProvider.setUserDetailsService(userDetailsService());
+    authProvider.setPasswordEncoder(passwordEncoder());
+    return authProvider;
+}
+```
+
+* **Purpose:** Defines the mechanism for authenticating users.
+* ****DaoAuthenticationProvider:**** A standard provider that uses UserDetailsService to fetch user details and validates the password using the provided PasswordEncoder.
+* ****setUserDetailsService(userDetailsService()):**** Links the custom UserDetailsService bean for fetching user details.
+* ****setPasswordEncoder(passwordEncoder()):**** Configures password encoding using BCrypt.
+
+* **AuthenticationManager ```@Bean method```**
+```
+@Bean
+public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    return config.getAuthenticationManager();
+}
+```
+
+* **Purpose:** Exposes the AuthenticationManager bean, which coordinates authentication by delegating to AuthenticationProviders.
+* ***Why It’s Needed:*** Allows manual injection of AuthenticationManager in other parts of the application (e.g., custom login logic).
+
+  **PasswordEncoder ```@Bean method```**
+```
+@Bean
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+}
+```
+  ***Purpose:** Configures password hashing using the BCrypt algorithm.
+* *Why It’s Secure?**
+  - BCrypt is a robust algorithm designed for password hashing.
+  - It includes salting and a configurable work factor, making brute-force attacks computationally expensive.<br/>
+  
+## JwtAuthenticationFilter Configuration Class
+ > This JwtAuthenticationFilter is a custom implementation of a filter that processes incoming HTTP requests to verify JWT tokens, extract user details, and set up security context for authenticated users. It extends OncePerRequestFilter, which ensures the filter is executed only once per request.
+
+```
+@Component
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private final JwtServiceImplementations jwtService;
+    private final UserDetailsService userDetailsService;
+}
+```
+
+* **```@Component:```** Marks the class as a Spring Bean, enabling Spring to manage its lifecycle and include it in the application context.
+* **```@RequiredArgsConstructor:```**  Generates a constructor for final fields, allowing dependency injection for JwtServiceImplementations and UserDetailsService.
+* The ```doFilterInternal``` Method Retrieves the Authorization header from the HTTP request. i.e
+ ```
+ final String authHeader = request.getHeader("Authorization");
+ ````
+- Check Header Validity:
+  > Ensures the header is present and starts with "Bearer ".
+  > If invalid, the filter skips further processing and lets the request continue.
+```
+if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+    filterChain.doFilter(request, response);
+    return;
+}
+```
+- Extract the JWT and Username:
+```
+jwt = authHeader.substring(7);
+userEmail = jwtService.extractUsername(jwt);
+```
+- Extracts the JWT by removing the "Bearer " prefix.
+- Calls jwtService.extractUsername(jwt) to extract the username encoded in the token.
+  * **Authenticate the User:***
+```
+if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {}
+```
+- Ensures the username exists and no authentication is already present in the security context.
+  * **Load User Details:**
+```
+UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+```
+- Fetches the user’s details from UserDetailsService.
+   * **Validate the JWT:**
+```
+if (jwtService.isTokenValid(jwt, userDetails)) {}
+```
+- Calls jwtService.isTokenValid(jwt, userDetails) to check if the token is valid and matches the user.
+  * **Extract Roles and Authorities:**
+```
+Claims claims = jwtService.extractAllClaims(jwt);
+List<String> roles = claims.get("roles", List.class);
+```
+- Retrieves roles from the JWT claims.
+- Converts roles into SimpleGrantedAuthority objects required by Spring Security.
+  ***Set Authentication in the Security Context:**
+```
+UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+    userDetails, null, authorities);
+authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+SecurityContextHolder.getContext().setAuthentication(authToken);
+```
+- Creates an authentication token with user details and granted authorities.
+- Sets it in the SecurityContextHolder.
+  **Handle Exceptions:**
+```
+} catch (ExpiredJwtException e) {
+    setErrorResponse(HttpServletResponse.SC_UNAUTHORIZED, response, "Token has expired", "expired_token");
+} catch (JwtException | IllegalArgumentException e) {
+    setErrorResponse(HttpServletResponse.SC_UNAUTHORIZED, response, "Invalid token", "invalid_token");
+}
+```
+  * **```ExpiredJwtException:```** Handles cases where the token is expired.
+  * **```JwtException | IllegalArgumentException:```** Handles invalid or malformed tokens.
+  Calls **```setErrorResponse```** to send a standardized error response.
+   - Continue the Filter Chain:
+```
+filterChain.doFilter(request, response);
+```
+- Ensures the request proceeds through other filters in the chain.
+
+## RabbitMQ Configuration Class
+
+> This RabbitMQConfig class is a Spring configuration class that sets up RabbitMQ messaging components such as exchanges, queues, bindings, and message converters. It simplifies the integration of RabbitMQ with a Spring Boot application and ensures that messages can be serialized and deserialized as JSON objects.
+- Message Converter
+```
+@Bean
+public Jackson2JsonMessageConverter messageConverter() {
+    return new Jackson2JsonMessageConverter();
+}
+```
+- Defines a message converter that converts Java objects to JSON and vice versa.
+- Ensures that RabbitMQ messages are serialized into JSON when sent and deserialized back into Java objects when received.
+   - **RabbitMQ Constants**
+```
+public static final String AUTH_EXCHANGE = "auth.notifications";
+```
+- A constant for the exchange name ```(auth.notifications)```
+- Used as a central reference to avoid hardcoding the exchange name throughout the code.
+   - **Exchange Definition**
+```
+@Bean
+public DirectExchange authExchange() {
+    return new DirectExchange(AUTH_EXCHANGE);
+}
+```
+- Created a direct exchange named auth.notifications
+- Direct exchanges route messages to queues based on routing keys that exactly match the queue bindings.
+  - **Queue Definitions**
+```
+@Bean
+public Queue emailVerificationQueue() {
+    return new Queue("email.verification");
+}
+
+@Bean
+public Queue emailOtpQueue() {
+    return new Queue("email.otp");
+}
+
+@Bean
+public Queue emailResetPasswordQueue() {
+    return new Queue("email.reset-password");
+}
+```
+- Creates three distinct RabbitMQ queues:
+    - **email.verification:** Used for handling email verification messages.
+    - **email.otp:** Used for handling OTP (One-Time Password) emails.
+    - **email.reset-password:** Used for handling password reset emails.
+  - **Binding Queues to Exchange**
+```
+@Bean
+public Binding emailVerificationBinding(Queue emailVerificationQueue, DirectExchange authExchange) {
+    return BindingBuilder.bind(emailVerificationQueue).to(authExchange).with("email.verification");
+}
+
+@Bean
+public Binding emailOtpBinding(Queue emailOtpQueue, DirectExchange authExchange) {
+    return BindingBuilder.bind(emailOtpQueue).to(authExchange).with("email.otp");
+}
+
+@Bean
+public Binding emailResetPasswordBinding(Queue emailResetPasswordQueue, DirectExchange authExchange) {
+    return BindingBuilder.bind(emailResetPasswordQueue).to(authExchange).with("email.reset-password");
+}
+```
+- Bindings connect queues to the exchange with specific routing keys:
+  - **email.verification** routing key for the email.verification queue.
+  - **email.otp** routing key for the email.otp queue.
+  - **email.reset-password** routing key for the email.reset-password queue.
+- A direct exchange routes messages to a queue only if the message’s routing key matches the binding key.
+    -  **RabbitTemplate Configuration**
+```
+@Bean
+public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+    RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+    rabbitTemplate.setMessageConverter(messageConverter());
+    return rabbitTemplate;
+}
+```
+- ```RabbitTemplate:``` A Spring abstraction for sending and receiving messages to/from RabbitMQ
+- Configured with
+    - **ConnectionFactory:** Manages the RabbitMQ connection.
+    - **MessageConverter:** Uses the Jackson2JsonMessageConverter to serialize messages to JSON.
+
+
+# NOTE
+> The ```application.yml``` structure is not the best way to set up your application especially for production, i would recommend ```.env``` file  or file like ```app.key``` to hold jwt private secret key and ```app.pub``` holding public key file and rest like paystack, flutterwave keys should be in ```.env``` file **FOR SECURITY REASONSE**
+
+# What are the challenges encounter from the stated project (if any)?
+
+- Challenge(1): Seamlessly integrating Spring Security, Go services, and Spring Boot for a unified user experience while maintaining consistent data flow across platforms.
+- Challenge(2): Ensuring secure authentication and authorization across multiple services (Spring Security for authentication, Go for trading). Token sharing and validation in a distributed architecture are critical.
+
+# **How were you able to overcome it?**
+- Solution(1): Use message brokers like RabbitMQ on authentication service and Kafka on deposit/withdraw wallet to enable smooth communication between services and ensure robust API documentation for cross-language compatibility.
+- Solution(2): Implement a centralized token service (using OAuth2/JWT) to ensure uniform security policies across all services.
+
+ # VIEW THE DEPOSIT WITHDRAW TRANSFER SERVICE APPLICATION
+ - [Go Deposit Service branch](https://github.com/davidakpele/globalBankingSystem/tree/ewallet)
+ - [Go Crypto Service Branch](https://github.com/davidakpele/globalBankingSystem/tree/cryptoservice)
+ - [Go BillPayment Service Branch](https://github.com/davidakpele/globalBankingSystem/tree/billservice)
