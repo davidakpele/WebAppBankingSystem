@@ -355,12 +355,12 @@ public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
 # NOTE
 > The ```application.yml``` structure is not the best way to set up your application especially for production, i would recommend ```.env``` file  or file like ```app.key``` to hold jwt private secret key and ```app.pub``` holding public key file and rest like paystack, flutterwave keys should be in ```.env``` file **FOR SECURITY REASONSE**
 
-# What are the challenges encounter from the stated project (if any)?
+## What are the challenges encounter from the stated project (if any)?
 
 - Challenge(1): Seamlessly integrating Spring Security, Go services, and Spring Boot for a unified user experience while maintaining consistent data flow across platforms.
 - Challenge(2): Ensuring secure authentication and authorization across multiple services (Spring Security for authentication, Go for trading). Token sharing and validation in a distributed architecture are critical.
 
-# **How were you able to overcome it?**
+## **How were you able to overcome it?**
 - Solution(1): Use message brokers like RabbitMQ on authentication service and Kafka on deposit/withdraw wallet to enable smooth communication between services and ensure robust API documentation for cross-language compatibility.
 - Solution(2): Implement a centralized token service (using OAuth2/JWT) to ensure uniform security policies across all services.
 
