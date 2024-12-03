@@ -597,7 +597,7 @@ public class UserServiceClient {
 
 ## How were i able to overcome it?
 
-- `Solution(1)` Use WebSockets or server-sent events for real-time updates and ensure the trading engine in Go can handle concurrent transactions effectively.
+- `Solution(1)` Use WebSockets or server-sent events for real-time updates.
 - `Solution(2)` Leverage flutterWave APIs for real-time exchange rates like naira-to-dollar, dollar-to-euro, naira-to-pounds exchange and implement robust error handling to deal with third-party API failures.
 - `Solution(3)` Use microservices architecture, load balancing, and database optimization. Incorporate caching for frequently accessed data and monitor system performance.
 - `Solution(4)` Design the system with secure data storage, encryption, and audit trails. Regularly update policies to align with evolving regulations
