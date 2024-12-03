@@ -586,10 +586,38 @@ public class UserServiceClient {
        
 - One thing you will also notice is we are using `USERDTO class`, Yes
 - In microservice application you create alot of `DTO'S` class objects to read data that is why it call **`Data Transfer Objects`** you can say it serve as user representative in this this service which consist both **`User model`** and **`UserRecord model`**
-- 
 
+## What are the challenges encounter from the stating of the project?
 
+- `Challenge(1)` Providing real-time updates for crypto prices and transactions, which requires efficient communication between the backend and the front-end.
+- `Challenge(2)` Supporting both local currency operations and some foreign currency swapping involves accurate and up-to-date exchange rate handling, which can be resource-intensive.
+- `Challenge(3)` The platform must handle high traffic and complex operations like trading, wallet transactions, and blockchain calls without degrading performance.
+- `Challenge(4)` Ensuring compliance with local and international regulations for payment systems.
+- `Challenge(5)` Detecting Sophisticated Fraud Patterns- Fraudsters often use complex strategies that blend legitimate and illegitimate activities, making detection difficult.
+
+## How were i able to overcome it?
+
+- `Solution(1)` Use WebSockets or server-sent events for real-time updates and ensure the trading engine in Go can handle concurrent transactions effectively.
+- `Solution(2)` Leverage flutterWave APIs for real-time exchange rates like naira-to-dollar, dollar-to-euro, naira-to-pounds exchange and implement robust error handling to deal with third-party API failures.
+- `Solution(3)` Use microservices architecture, load balancing, and database optimization. Incorporate caching for frequently accessed data and monitor system performance.
+- `Solution(4)` Design the system with secure data storage, encryption, and audit trails. Regularly update policies to align with evolving regulations
+- `Solution(5)` Created middleware for advance security fraud detechtion:
+    - Implemented middleware for IP address monitoring and transaction interception based on several criteria
+         - **Large Transactions:** Flagged transactions exceeding platform-defined thresholds for further review.
+         - **High-Frequency Transactions:** Monitored accounts for unusually high transaction volumes within short time-frames to detect suspicious behavior or could indicate potential money laundering or illegal activity.
+         - Geographic and Risk-Based Monitoring:  Identified transactions involving high-risk regions/countries or blacklisted wallet addresses to comply with AML regulations.
+         - Behavioral Analysis: Detected inconsistent behavior, such as large deviations from typical transaction amounts, to prevent fraud.
+         - Multiple Accounts Sharing the Same IP: Checked for potential sybil attacks by monitoring accounts initiating transactions from the same IP address.
+             - **Reason:**
+                 - This could be a sign of suspicious activity such as a single entity controlling multiple accounts.
+        - **Deposits Followed by Immediate Transfers:** Flagged immediate fund transfers after deposits to prevent potential money laundering activities.
+            - **Reason:**
+                - This behavior could indicate attempts to obfuscate the origin of the funds (layering phase of money laundering).
+        - Implement data Encryption.
+        - Implement Event Sourcing to make history difficult to tamper.
+  
  # VIEW THE DEPOSIT WITHDRAW TRANSFER SERVICE APPLICATION
+ 
  - [Go Deposit Service branch](https://github.com/davidakpele/globalBankingSystem/tree/ewallet)
  - [Go Crypto Service Branch](https://github.com/davidakpele/globalBankingSystem/tree/cryptoservice)
  - [Go BillPayment Service Branch](https://github.com/davidakpele/globalBankingSystem/tree/billservice)
