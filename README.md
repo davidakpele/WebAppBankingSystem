@@ -605,9 +605,9 @@ public class UserServiceClient {
     - Implemented middleware for IP address monitoring and transaction interception based on several criteria
          - **Large Transactions:** Flagged transactions exceeding platform-defined thresholds for further review.
          - **High-Frequency Transactions:** Monitored accounts for unusually high transaction volumes within short time-frames to detect suspicious behavior or could indicate potential money laundering or illegal activity.
-         - Geographic and Risk-Based Monitoring:  Identified transactions involving high-risk regions/countries or blacklisted wallet addresses to comply with AML regulations.
-         - Behavioral Analysis: Detected inconsistent behavior, such as large deviations from typical transaction amounts, to prevent fraud.
-         - Multiple Accounts Sharing the Same IP: Checked for potential sybil attacks by monitoring accounts initiating transactions from the same IP address.
+         - **Geographic and Risk-Based Monitoring:**  Identified transactions involving high-risk regions/countries or blacklisted wallet addresses to comply with AML regulations.
+         - **Behavioral Analysis:** Detected inconsistent behavior, such as large deviations from typical transaction amounts, to prevent fraud.
+         - **Multiple Accounts Sharing the Same IP:** Checked for potential sybil attacks by monitoring accounts initiating transactions from the same IP address.
              - **Reason:**
                  - This could be a sign of suspicious activity such as a single entity controlling multiple accounts.
         - **Deposits Followed by Immediate Transfers:** Flagged immediate fund transfers after deposits to prevent potential money laundering activities.
