@@ -27,4 +27,8 @@ public interface UserRecordService {
     ResponseEntity<?> updateUserRecordTransferPinStatus(Long id, Authentication authentication);
 
     UserDTO findPublicUserByUserId(Long userId);
+
+    ResponseEntity<?> lockUserAccount(Long userId);
+
+    ResponseEntity<?> blockUserAccount(Long userId);
 }

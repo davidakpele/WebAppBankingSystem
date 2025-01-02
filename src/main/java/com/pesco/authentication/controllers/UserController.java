@@ -265,4 +265,29 @@ public class UserController {
 
         return ResponseEntity.ok(userDTO);
     }
+
+    @PutMapping("/{id}/account/lock")
+    public ResponseEntity<?> lockUserAccount(@PathVariable Long userId, HttpServletResponse response) {
+        if (userId == null) {
+            return Error.createResponse("User Id is require.*", HttpStatus.BAD_REQUEST, "Username is require.*");
+        } else if (userServices.getUserById(userId) == null) {
+            return Error.createResponse("User with user Id " + userId + " does not exist.", HttpStatus.BAD_REQUEST,
+                    "User does not exist");
+        }
+    
+        return userRecordService.lockUserAccount(userId);
+    }
+
+    @PutMapping("/{id}/account/block")
+    public ResponseEntity<?> blockUserAccount(@PathVariable Long userId, HttpServletResponse response) {
+        if (userId == null) {
+            return Error.createResponse("User Id is require.*", HttpStatus.BAD_REQUEST, "Username is require.*");
+        } else if (userServices.getUserById(userId) == null) {
+            return Error.createResponse("User with user Id " + userId + " does not exist.", HttpStatus.BAD_REQUEST,
+                    "User does not exist");
+        }
+
+        return userRecordService.blockUserAccount(userId);
+    }
+
 }

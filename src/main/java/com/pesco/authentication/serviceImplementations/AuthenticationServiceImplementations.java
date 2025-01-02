@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.pesco.authentication.MessageProducers.NotificationProducer;
+import com.pesco.authentication.enums.AttemptType;
 import com.pesco.authentication.enums.Role;
 import com.pesco.authentication.enums.UserStatus;
 import com.pesco.authentication.micro_services.CoinWalletService;
@@ -38,6 +39,7 @@ import com.pesco.authentication.responses.VerificationTokenResult;
 import com.pesco.authentication.services.AuthenticationService;
 import com.pesco.authentication.services.AuthorizeUserVerificationService;
 import com.pesco.authentication.services.JwtService;
+import com.pesco.authentication.services.UserAttemptService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +64,8 @@ public class AuthenticationServiceImplementations implements AuthenticationServi
     private final AuthorizeUserVerificationService authorizeUserVerificationService;
     private final AuthorizeUserVerificationRepository authorizeUserVerificationRepository;
     private final TwoFactorAuthenticationServiceImplementations twoFactorAuthenticationServiceImplementation;
-  
+    private final UserAttemptService userAttemptService;
+
     @Transactional
     public ResponseEntity<String> createAccount(UserSignUpRequest request) {
         Long nextUserId = getNextUserId();
@@ -127,69 +130,109 @@ public class AuthenticationServiceImplementations implements AuthenticationServi
     @Override
     public ResponseEntity<?> login(UserSignInRequest request, HttpServletResponse response) {
         Map<String, Object> Authresponse = new HashMap<>();
+
         Optional<Users> userInfo = userRepository.findByUsername(request.getUsername());
         if (userInfo.get().isEnabled()) {
-            authenticationManager.authenticate(
+            try {
+                authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getUsername(),
-                            request.getPassword()));
+                        request.getUsername(), 
+                        request.getPassword()
+                    )
+                );
+                Users user = userRepository.findById(userInfo.get().getId())
+                        .orElseThrow(() -> new AuthenticationServiceException("User records not found"));
 
-            Users user = userRepository.findById(userInfo.get().getId()).orElseThrow(() -> new AuthenticationServiceException("User records not found"));
+                Optional<UserRecord> checkAccountStatus = userRecordRepository.findByUserId(user.getId());
+                if (checkAccountStatus.isPresent()) {
+                    if (checkAccountStatus.get().isLocked()) {
+                        // Account is not verified
+                        Authresponse.put("status", HttpStatus.BAD_REQUEST);
+                        Authresponse.put("success", false);
+                        Authresponse.put("message",
+                                "Sorry, This account is currently Locked, Please contact our customer service.");
 
-            var jwtToken = jwtService.generateToken((UserDetails) userInfo.get());
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Authresponse);
+                    } else if (checkAccountStatus.get().is_blocked()) {
+                        // Account is not verified
+                        Authresponse.put("status", false);
+                        Authresponse.put("success", false);
+                        Authresponse.put("message",
+                                "Sorry, This account is currently Blocked, Please contact our customer service.");
 
-            boolean isTwoFactorAuthEnabled = user.isTwoFactorAuth();
-            Optional<Users> authUser = userRepository.findByEmail(user.getEmail());
-            
-            // Handle Two-Factor Authentication
-            if (isTwoFactorAuthEnabled) {
-                Authresponse.put("message","Two factor authentication is enabled.");
-                Authresponse.put("twoFactorAuthEnabled", isTwoFactorAuthEnabled);
-                Authresponse.put("status", true);
-
-                String Otp = keysWrapper.generateOTP();
-                String jwt = keysWrapper.generateUniqueKey();
-
-                TwoFactorAuthentication alreadyExistTwoFactorOTP = twoFactorAuthenticationServiceImplementation.findByUser(user.getId());
-                
-                if (alreadyExistTwoFactorOTP != null) {
-                    twoFactorAuthenticationServiceImplementation.deleteTwoFactorOtp(alreadyExistTwoFactorOTP);
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Authresponse);
+                    }
                 }
+                var jwtToken = jwtService.generateToken((UserDetails) userInfo.get());
+
+                boolean isTwoFactorAuthEnabled = user.isTwoFactorAuth();
+                Optional<Users> authUser = userRepository.findByEmail(user.getEmail());
+
+                // Handle Two-Factor Authentication
+                if (isTwoFactorAuthEnabled) {
+                    Authresponse.put("message", "Two factor authentication is enabled.");
+                    Authresponse.put("twoFactorAuthEnabled", isTwoFactorAuthEnabled);
+                    Authresponse.put("status", HttpStatus.BAD_REQUEST);
+
+                    String Otp = keysWrapper.generateOTP();
+                    String jwt = keysWrapper.generateUniqueKey();
+
+                    TwoFactorAuthentication alreadyExistTwoFactorOTP = twoFactorAuthenticationServiceImplementation
+                            .findByUser(user.getId());
+
+                    if (alreadyExistTwoFactorOTP != null) {
+                        twoFactorAuthenticationServiceImplementation.deleteTwoFactorOtp(alreadyExistTwoFactorOTP);
+                    }
+
+                    Users userOtp = authUser.get();
+                    TwoFactorAuthentication newTwoFactorOTP = twoFactorAuthenticationServiceImplementation
+                            .createTwoFactorOtp(userOtp, Otp, jwt);
+
+                    Authresponse.put("status", newTwoFactorOTP.getId().toString());
+
+                    TwoFactorAuthentication getToken = twoFactorAuthenticationServiceImplementation
+                            .findByUser(user.getId());
+
+                    Authresponse.put("jwt", getToken.getJwt());
+
+                    String restPassword = keysWrapper.getUrl() + "/auth/security/password";
+                    String configTwoFactorAuth = keysWrapper.getUrl()
+                            + "/auth/security/configuring-two-factor-authentication";
+                    String configTwoFactorAuthRecovery = keysWrapper.getUrl()
+                            + "/auth/security/configuring-two-factor-authentication-recovery-methods";
+
+                    // Send otp to user email
+                    notificationProducer.sendOptEmail(user.getEmail(), Otp, restPassword, configTwoFactorAuth,
+                            configTwoFactorAuthRecovery);
+
+                    return new ResponseEntity<>(Authresponse, HttpStatus.OK);
+                }
+
+                Authresponse.put("jwt", jwtToken);
+                Authresponse.put("email", userInfo.get().getEmail());
+                Authresponse.put("userId", userInfo.get().getId());
+                Authresponse.put("status", HttpStatus.OK);
+                Authresponse.put("success", true);
+                Authresponse.put("session", true);
+                Authresponse.put("twoFactorAuthEnabled", userInfo.get().isTwoFactorAuth());
+                Authresponse.put("username", userInfo.get().getUsername());
+                // Set the JWT as a cookie
+                Cookie cookie = new Cookie("authToken", jwtToken);
+                cookie.setMaxAge(24 * 60 * 60);
+                cookie.setPath("/");
+                response.addCookie(cookie);
+
+                return new ResponseEntity<>(Authresponse, HttpStatus.OK);
+            } catch (Exception e) {
+                // Authentication failed, increment bad attempts counter
+                ResponseEntity<?> createAttempt = userAttemptService.createFailAttempt(userInfo.get().getId(), AttemptType.LOGIN);
                 
-                TwoFactorAuthentication newTwoFactorOTP = twoFactorAuthenticationServiceImplementation.createTwoFactorOtp(authUser, Otp, jwt);
+                Authresponse.put("status", HttpStatus.BAD_REQUEST);
+                Authresponse.put("success", false);
+                Authresponse.put("details", createAttempt.getBody() == null ? "Invalid credentials provided.!":createAttempt.getBody().toString());
                
-                Authresponse.put("status", newTwoFactorOTP.getId().toString());
-
-                TwoFactorAuthentication getToken = twoFactorAuthenticationServiceImplementation.findByUser(user.getId());
-
-                Authresponse.put("jwt", getToken.getJwt());
-                
-                String restPassword = keysWrapper.getUrl() + "/auth/security/password";
-                String configTwoFactorAuth = keysWrapper.getUrl() +"/auth/security/configuring-two-factor-authentication";
-                String configTwoFactorAuthRecovery = keysWrapper.getUrl() +"/auth/security/configuring-two-factor-authentication-recovery-methods";
-
-                // Send otp to user email
-                notificationProducer.sendOptEmail(user.getEmail(), Otp, restPassword, configTwoFactorAuth, configTwoFactorAuthRecovery);
-               
-
-                return new ResponseEntity<>(Authresponse, HttpStatus.ACCEPTED);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Authresponse);
             }
-
-            Authresponse.put("jwt", jwtToken);
-            Authresponse.put("email", userInfo.get().getEmail());
-            Authresponse.put("userId", userInfo.get().getId());
-            Authresponse.put("status", true);
-            Authresponse.put("success", true);
-            Authresponse.put("session", true);
-            Authresponse.put("twoFactorAuthEnabled", userInfo.get().isTwoFactorAuth());
-            Authresponse.put("username", userInfo.get().getUsername());
-            // Set the JWT as a cookie
-            Cookie cookie = new Cookie("authToken", jwtToken);
-            cookie.setMaxAge(24 * 60 * 60); 
-            cookie.setPath("/");
-            response.addCookie(cookie);
-
-            return new ResponseEntity<>(Authresponse, HttpStatus.OK);
         } else {
             // Account is not verified
             Authresponse.put("status", false);

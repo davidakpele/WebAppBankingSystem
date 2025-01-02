@@ -17,7 +17,7 @@ public interface UserService {
 
     Object deactivateAccount(Long id, Authentication authentication);
 
-    String forgetPassword(String email);
+    ResponseEntity<?> forgetPassword(String email);
 
     ResponseEntity<?> updateUserProfile(String username, String email, String gender, String profilePath);
 

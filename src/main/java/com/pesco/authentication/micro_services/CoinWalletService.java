@@ -12,7 +12,7 @@ public class CoinWalletService {
     @Autowired
     private WebClient.Builder webClientBuilder;
 
-    private static final String CREATE_WALLET_URL = "http://localhost:8014/wallet/create";
+    private static final String CREATE_WALLET_URL = "http://localhost:8014/coin/account/create";
 
     public void createUserWallet(Users user) {
         WebClient webClient = webClientBuilder.build();

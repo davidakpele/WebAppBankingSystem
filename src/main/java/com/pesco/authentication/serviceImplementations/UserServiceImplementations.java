@@ -9,6 +9,9 @@ import com.pesco.authentication.repositories.UserRecordRepository;
 import com.pesco.authentication.repositories.UsersRepository;
 import com.pesco.authentication.services.PasswordResetTokenService;
 import com.pesco.authentication.services.UserService;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -94,24 +97,31 @@ public class UserServiceImplementations implements UserService{
         return ResponseEntity.ok("Account deactivated successfully");
     }
 
-    public String forgetPassword(String email) {
+    public ResponseEntity<?> forgetPassword(String email) {
+        Map<String, Object> response = new HashMap<>();
         Optional<Users> user = userRepository.findByEmail(email);
-        if (!user.isPresent()) {
-            return "failure";
+        if (user.isPresent()) {
+            String token = UUID.randomUUID().toString();
+
+            passwordResetTokenService.createUserUserSession(user.get().getId(), token);
+            // Send email
+            String url = keysWrapper.getUrl() + "/auth/reset-password?token=" + token;
+            String content = "We received a request to reset the password for your account associated with this email address. If you did not request this change, please ignore this email."
+                    + "To reset your password, please click on the link below:";
+            String customerEmail = customerServiceEmailProperty.getEmail();
+
+            emailService.sendPasswordResetMessage(user.get().getEmail(), user.get().getUsername(), content, url,
+                    customerEmail);
+
+            response.put("message", "Message has been sent to the very email address provided. Please follow the instructions to reset your password.");
+            response.put("token", token);
+            response.put("status", HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        String token = UUID.randomUUID().toString();
-
-        passwordResetTokenService.createUserUserSession(user.get().getId(), token);
-        // Send email
-        String url = keysWrapper.getUrl() + "/auth/reset-password?token=" + token;
-        String content = "We received a request to reset the password for your account associated with this email address. If you did not request this change, please ignore this email."
-                + "To reset your password, please click on the link below:";
-        String customerEmail = customerServiceEmailProperty.getEmail();
-
-        emailService.sendPasswordResetMessage(user.get().getEmail(), user.get().getUsername(), content, url,
-                customerEmail);
-        
-       return "Ok";
+      
+        response.put("message", "User not found.!");
+        response.put("status", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
 

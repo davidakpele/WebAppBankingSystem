@@ -1,9 +1,7 @@
 package com.pesco.authentication.controllers;
 
 import java.util.Optional;
-
 import javax.validation.Valid;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
-
 import com.pesco.authentication.models.Users;
 import com.pesco.authentication.payloads.UserSignUpRequest;
 import com.pesco.authentication.payloads.ChangePasswordRequest;
@@ -112,12 +109,7 @@ public class AuthController {
         if (request.getPassword() == null || request.getPassword().isEmpty()) {
             return Error.createResponse("Password is require*", HttpStatus.BAD_REQUEST, "Password can not be empty");
         }
-        try {
-            return authenticationService.login(request, response);
-        } catch (Exception e) {
-            return Error.createResponse("Invalid credentials provided.!", HttpStatus.BAD_REQUEST,
-                    "Wrong username/password");
-        }
+        return authenticationService.login(request, response);
     }
 
     @GetMapping("/verifyRegistration")
@@ -159,7 +151,6 @@ public class AuthController {
         return modelAndView;
     }
 
-
     @GetMapping("/resendVerifyToken")
     public ResponseEntity<?> resendVerificationToken(@RequestParam("token") String oldToken) {
         VerificationTokenResult response = authenticationService.generateVerificationToken(oldToken);
@@ -180,17 +171,7 @@ public class AuthController {
             return Error.createResponse("Your need to provide email address", HttpStatus.BAD_REQUEST,
                     "Invalid request sent.");
         }
-        String response = userServiceImplementation.forgetPassword(request.getEmail());
-
-        if (response.equals("failure")) {
-            return Error.createResponse("User not found.", HttpStatus.BAD_REQUEST,
-                    "This email address does not exist in our system, Please try again.");
-        } else {
-            return Error.createResponse(
-                    "Message has been sent to the very email address provided. Please follow the instructions to reset your password.",
-                    HttpStatus.OK,
-                    response);
-        }
+        return userServiceImplementation.forgetPassword(request.getEmail());
     }
 
     @GetMapping("/reset-password")

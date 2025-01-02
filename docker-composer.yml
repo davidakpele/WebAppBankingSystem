@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  authentication: 
+    build:
+      context: ./authentication
+    container_name: digital_banking_authentication_container
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/pesco_users_db
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    ports:
+      - "8080:8080" 
+    networks:
+      - authentication-network
+    depends_on:
+      - db
+
+  db:
+    image: mysql:latest
+    container_name: mysql_container
+    environment:
+      MYSQL_DATABASE: pesco_users_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    ports:
+      - "3307:3306" 
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+
+networks:
+  authentication-network:
+    driver: bridge

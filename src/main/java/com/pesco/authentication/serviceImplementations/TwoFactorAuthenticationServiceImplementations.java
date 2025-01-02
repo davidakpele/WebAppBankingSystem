@@ -3,7 +3,6 @@ package com.pesco.authentication.serviceImplementations;
 import java.util.Optional;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.UUID;
 import java.util.HashMap;
 import java.util.Map;
 import com.pesco.authentication.responses.Error;
@@ -38,19 +37,14 @@ public class TwoFactorAuthenticationServiceImplementations implements TwoFactorA
     }
 
     @Override
-    public TwoFactorAuthentication createTwoFactorOtp(Optional<Users> authUser, String otp, String jwtToken) {
-
-        UUID uuid = UUID.randomUUID();
-        Long id = uuid.getMostSignificantBits(); // Generates a unique Long ID
+    public TwoFactorAuthentication createTwoFactorOtp(Users authUser, String otp, String jwtToken) {
         expirationTime = calculateExpirationDate(EXPIRATION_MINUTES);
         TwoFactorAuthentication twoFactorOTP = TwoFactorAuthentication.builder()
-                .otp(otp)
-                .jwt(jwtToken)
-                .expirationTime(expirationTime)
-                .id(id)
-                .userId(authUser.get().getId())
-                .build();
-
+            .otp(otp)
+            .jwt(jwtToken)
+            .expirationTime(expirationTime)
+            .userId(authUser.getId())
+            .build();
         return twoFactorOTPRepository.save(twoFactorOTP);
     }
 

@@ -2,6 +2,7 @@ package com.pesco.authentication.serviceImplementations;
 
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -106,6 +107,31 @@ public class UserRecordImplementations implements UserRecordService {
         }
 
         return null;
+    }
+
+    @Override
+    public ResponseEntity<?> lockUserAccount(Long userId) {
+        Optional<UserRecord> user = userRecordRepository.findByUserId(userId);
+        if (user !=null && user.isPresent()) {
+            UserRecord updateUserAccount = user.get();
+            
+            updateUserAccount.setLocked(true);
+            userRecordRepository.save(updateUserAccount);
+            return ResponseEntity.ok("User account successfully lock.");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+    }
+
+    @Override
+    public ResponseEntity<?> blockUserAccount(Long userId) {
+        Optional<UserRecord> user = userRecordRepository.findByUserId(userId);
+        if (user != null && user.isPresent()) {
+            UserRecord updateUserAccount = user.get();
+            updateUserAccount.set_blocked(true);
+            userRecordRepository.save(updateUserAccount);
+            return ResponseEntity.ok("User account successfully block.");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
     }
 
     
