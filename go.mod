@@ -69,4 +69,10 @@ require (
 	github.com/ethereum/go-ethereum v1.14.12
 )
 
-require github.com/holiman/uint256 v1.3.1 // indirect
+require (
+	github.com/gorilla/mux v1.8.1
+	github.com/holiman/uint256 v1.3.1 // indirect
+	github.com/shopspring/decimal v1.4.0
+)
+
+require github.com/go-resty/resty/v2 v2.16.2 // indirect

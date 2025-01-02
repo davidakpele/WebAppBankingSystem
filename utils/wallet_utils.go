@@ -151,3 +151,64 @@ func createCardanoWallet() (string,  error) {
     address := hex.EncodeToString(publicKey) 
     return address, nil
 }
+
+// func generateKeyPair() (*rsa.PrivateKey, *rsa.PublicKey) {
+//     privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+//     if err != nil {
+//         fmt.Println(err)
+//         os.Exit(1)
+//     }
+//     publicKey := &privateKey.PublicKey
+//     return privateKey, publicKey
+// }
+
+// func encryptData(publicKey *rsa.PublicKey, data []byte) ([]byte, error) {
+//     encryptedData, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, data)
+//     if err != nil {
+//         return nil, err
+//     }
+//     return encryptedData, nil
+// }
+
+// func signData(privateKey *rsa.PrivateKey, data []byte) ([]byte, error) {
+//     signedData, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, data)
+//     if err != nil {
+//         return nil, err
+//     }
+//     return signedData, nil
+// }
+
+// func verifySignature(publicKey *rsa.PublicKey, signedData []byte, data []byte) error {
+//     return rsa.VerifyPKCS1v15(publicKey, crypto.SHA256, data, signedData)
+// }
+
+
+
+// func main() {
+//     // Generate a key pair
+//     privateKey, publicKey := generateKeyPair()
+
+//     // Encrypt user details
+//     userData := []byte("John Doe")
+//     encryptedData, err := encryptData(publicKey, userData)
+//     if err != nil {
+//         fmt.Println(err)
+//         os.Exit(1)
+//     }
+
+//     // Sign the encrypted data
+//     signedData, err := signData(privateKey, encryptedData)
+//     if err != nil {
+//         fmt.Println(err)
+//         os.Exit(1)
+//     }
+
+//     // Verify the signature
+//     err = verifySignature(&publicKey, signedData, encryptedData)
+//     if err != nil {
+//         fmt.Println(err)
+//         os.Exit(1)
+//     }
+
+//     fmt.Println("Signature verified successfully!")
+// }

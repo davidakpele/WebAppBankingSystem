@@ -1,19 +1,21 @@
 package models
 
 import (
-    "time"
-     "gorm.io/gorm"
+	"time"
+	"gorm.io/gorm"
+	"github.com/shopspring/decimal"
 )
 
 
 type Wallet struct {
     gorm.Model
-    ID           uint    `gorm:"primaryKey"`
-    Balance       float64 `json:"balance"`
-    CryptoID      string  `json:"crypto_id"`  
-    UserID        uint    `json:"user_id"`  
-    Version      int     `gorm:"default:1"`
-    WalletAddress string  `json:"wallet_address"`
+    ID           uint            `gorm:"primaryKey;autoIncrement" json:"id"`
+    UserID       uint            `gorm:"not null" json:"user_id"`  
+    CryptoID     string          `gorm:"not null" json:"crypto_id"` 
+    Balance      decimal.Decimal `gorm:"type:decimal(19,2)" json:"balance"` 
+    FillAmount    decimal.Decimal `gorm:"type:decimal(19,2)" json:"fill_amount"`
+    WalletAddress string         `json:"wallet_address"`     
+    Version      int             `gorm:"version" json:"-"` 
 }
 
 // User represents the users table in the database

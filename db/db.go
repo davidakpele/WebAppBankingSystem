@@ -44,10 +44,11 @@ func Connect() {
     err = DB.AutoMigrate(
         &models.Wallet{},
         &models.Coin{},
-        &models.CoinBooking{},
-        &models.CoinRevenue{},
-        &models.CoinTransactionHistory{},
+        &models.Bookings{},
+        &models.Revenue{},
+        &models.History{},
         &models.Order{},
+        &models.PaymentSettings{},
         &models.Escrow{}) 
     if err != nil {
         log.Fatalf("Could not migrate the database: %v", err)

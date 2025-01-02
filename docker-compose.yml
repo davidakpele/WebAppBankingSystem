@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  crypto-trading-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: crypto-trading-service
+    ports:
+      - "8014:8014"  # Expose Go app on port 8014
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:8080  # Set environment variable for auth service URL
+      - DEPOSIT_SERVICE_URL=http://deposit-service:8081  # Set environment variable for deposit service URL
+    depends_on:
+      - authentication-service  # Ensure auth-service starts before Go app
+      - deposit-service  # Ensure deposit-service starts before Go app
+
+  authentication-service:
+    image: my-auth-service-image  # Replace with actual image or build context for auth service
+    container_name: authentication-service
+    ports:
+      - "8080:8080"  # Expose the Spring Boot auth service
+    environment:
+      - DATABASE_URL=your-database-url  # Or any other configuration needed by Spring Boot
+
+  deposit-service:
+    image: my-deposit-service-image  # Replace with actual image or build context for deposit service
+    container_name: deposit-service
+    ports:
+      - "8081:8081"  # Expose the Spring Boot deposit service
+    environment:
+      - DATABASE_URL=your-database-url  # Or any other configuration needed by Spring Boot
+
+volumes:
+  postgres_data:
+    
+networks:
+  default:
+    external:
+      name: your-network-name

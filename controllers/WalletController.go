@@ -1,13 +1,20 @@
 package controllers
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
+	"wallet-app/payloads"
 	"wallet-app/services"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/joho/godotenv"
+	"github.com/shopspring/decimal"
 )
 
 // CreateWalletsRequest represents the request body structure
@@ -17,7 +24,7 @@ type CreateWalletsRequest struct {
 
 // UserController handles user-related operations
 type UserController struct {
-    userService  services.UserService
+    userService  services.UserAPIService
     walletService services.WalletService 
 }
 
@@ -29,30 +36,14 @@ type SpringErrorResponse struct {
     Target     string `json:"target"`
 }
 
-// json request for BuySell endpoint
-type BuySellRequest struct {
-    Action               string  `json:"action"`                // create or update
-    OfferType            string  `json:"offerType"`             // SELL or BUY
-    Asset                string  `json:"asset"`                 // Cryptocurrency ID like btc or eth
-    Amount               float64 `json:"amount"`                // Amount of crypto
-    Price                float64 `json:"price"`                 // Fiat currency (e.g. 3000)
-    Currency             string  `json:"currency"`              // USD or NGN
-    PaymentMethod        string  `json:"paymentMethod"`         // Payment method, e.g., bank-transfer or ewallet
-    PaymentInstructions  string  `json:"paymentInstructions"`   // Payment instructions
-    SellerId             string  `json:"sellerId"`              // Seller username
-    BuyerId              string  `json:"buyerId"`               // Buyer username (optional)
-    Signature            string  `json:"signature"`             // Transaction or trade signature
-    RecipientWalletAddress string `json:"recipientWalletAddress"`// Recipient wallet address
-}
-
 // WalletController handles wallet-related requests
 type WalletController struct {
-    UserService  services.UserService
+    UserService  services.UserAPIService
     WalletService services.WalletService 
 }
 
 // NewUserController creates a new UserController
-func NewUserController(userService services.UserService, walletService services.WalletService) *UserController {
+func NewUserController(userService services.UserAPIService, walletService services.WalletService) *UserController {
     return &UserController{
         userService:  userService,
         walletService: walletService,
@@ -60,7 +51,7 @@ func NewUserController(userService services.UserService, walletService services.
 }
 
 // NewWalletController creates a new WalletController
-func NewWalletController(userService services.UserService, walletService services.WalletService) *WalletController {
+func NewWalletController(userService services.UserAPIService, walletService services.WalletService) *WalletController {
     return &WalletController{
         UserService:   userService,
         WalletService: walletService,
@@ -138,9 +129,6 @@ func (wc *WalletController) FetchAllBalances(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-
-
-
 func (wc *WalletController) CreateWallets(c *gin.Context) {
     if c.Request.Method != http.MethodPost {
         c.JSON(http.StatusMethodNotAllowed, gin.H{"error": "Invalid request method"})
@@ -173,3 +161,110 @@ func (wc *WalletController) CreateWallets(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{"message": "Wallets created successfully for user", "userId": req.UserID})
 }
 
+func (ctrl *WalletController) SellCryptoWithWalletAddress(c *gin.Context) {
+    var request payloads.BuySellRequest
+    if err := c.ShouldBindJSON(&request); err != nil {
+        // Log the error for debugging
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body", "details": err.Error()})
+        return
+    }
+
+    if strings.TrimSpace(request.RecipientWalletAddress) == "" {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Please provide recipient wallet address"})
+        return
+    }
+
+    // Check if Amount is zero or less than zero
+    if request.Amount.IsZero() || request.Amount.Cmp(decimal.NewFromFloat(0)) <= 0 {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Please provide a valid amount greater than zero"})
+        return
+    }
+
+    // Use c.Request to access the HTTP request
+    result, err := ctrl.WalletService.SellWithAddress(&request, c.Request)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Details: %v", err)})
+        return
+    }
+
+    c.JSON(http.StatusOK, result)
+}
+
+func (ctrl *WalletController) GetUserWalletAddressKey(c *gin.Context) {
+    // Load environment variables
+    if err := godotenv.Load(); err != nil {
+        c.JSON(http.StatusForbidden, gin.H{"error": "Error loading .env file"})
+        return
+    }
+
+    // Get the JWT secret key from environment variables
+    jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+    if jwtSecretKey == "" {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "JWT secret key is not set in .env file"})
+        return
+    }
+
+    // Get the Authorization header
+    authHeader := c.GetHeader("Authorization")
+    if authHeader == "" {
+        c.JSON(http.StatusForbidden, gin.H{"error": "Authorization header is missing"})
+        return
+    }
+
+    // Extract the token
+    tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+    if tokenString == authHeader {
+        c.JSON(http.StatusForbidden, gin.H{"error": "Authorization token format is incorrect"})
+        return
+    }
+
+    // Decode the JWT secret key
+    decodedKey, err := base64.StdEncoding.DecodeString(jwtSecretKey)
+    if err != nil {
+        c.JSON(http.StatusForbidden, gin.H{"error": "Failed to decode the secret key"})
+        return
+    }
+
+    // Parse the token
+    token, _:= jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+        if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+            return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+        }
+        return decodedKey, nil
+    })
+
+    if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+        // Extract the username from the token claims
+        tokenUsername, ok := claims["sub"].(string)
+        if !ok || tokenUsername == "" {
+            c.JSON(http.StatusForbidden, gin.H{"error": "Username not found in token claims or empty"})
+            return
+        }
+
+        // Get the service type from the query parameters
+        serviceType := c.Query("serviceType")
+        if strings.TrimSpace(serviceType) == "" {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Please provide wallet service, e.g., bitcoin or solana"})
+            return
+        }
+
+        // Fetch user details
+        userDTO, err := ctrl.UserService.FindByUsername(tokenUsername)
+        if err != nil || userDTO.Username != tokenUsername {
+            c.JSON(http.StatusForbidden, gin.H{"error": "Unauthorized access"})
+            return
+        }
+
+        // Fetch the wallet address key
+        addressKey, err := ctrl.WalletService.GetUserWalletAddressKey(serviceType, uint(userDTO.ID))
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Error : %v", err)})
+            return
+        }
+
+        // Respond with the address key
+        c.JSON(http.StatusOK, gin.H{"addressKey": addressKey})
+    } else {
+        c.JSON(http.StatusForbidden, gin.H{"error": "Invalid token"})
+    }
+}

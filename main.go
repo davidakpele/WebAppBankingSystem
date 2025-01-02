@@ -45,19 +45,46 @@ func main() {
 	router.SetHTMLTemplate(template.Must(template.ParseGlob("views/*.html")))
 
 	// Create instances of repositories
-	userRepository := repository.NewUserRepository(db.GetDB())
-	walletRepository := repository.NewWalletRepository(db.GetDB()) // Correct repository initialization
-	revenueService := repository.NewRevenueService(db.GetDB())
+	walletRepository := repository.NewWalletRepository(db.GetDB())
+	coinRepository := repository.NewCoinRepository(db.GetDB())
+	assetPriceRepository := repository.NewAssetPriceRepository(db.GetDB())
+	historyRepository := repository.NewHistoryRepository(db.GetDB())
+	orderRepository := repository.NewOrderRepository(db.GetDB())
+	historyService := services.NewHistoryService(historyRepository)
+	escrowRepository := repository.NewEscrowRepository(db.GetDB())
+	assetBookingRepository := repository.NewAssetsBookingRepository(db.GetDB())
+	revenueRepository := repository.NewRevenueRepository(db.GetDB())
+	paymentSettingRepository := repository.NewPaymentSettingRepository(db.GetDB())
+	// Create instances of services
+	userAPIService := services.NewUserAPIService()
+	revenueService := services.NewRevenueService(revenueRepository)
+	walletService := services.NewWalletService(walletRepository, jwtSecretKey, userAPIService, historyService, revenueService)
+	assetPriceService := services.NewAssetPriceService(assetPriceRepository)
+	paymentSettingService := services.NewPaymentSettingService(paymentSettingRepository)
+	// Initialize BankListService and handle potential error
+	bankListService, err := services.NewBankListService()
+	if err != nil {
+		log.Fatalf("Error initializing BankListService: %v", err)
+	}
 
-	// Create instances of services, passing the repository and JWT secret
-	userService := services.NewUserService(userRepository, walletRepository, revenueService)
-	walletService := services.NewWalletService(walletRepository, jwtSecretKey) // Corrected service initialization
+	orderMatchingService := services.NewOrderMatchingService(orderRepository, *coinRepository, userAPIService, historyRepository, assetBookingRepository, paymentSettingRepository)
+	escrowService := services.NewEscrowService(escrowRepository, orderRepository, walletService, assetBookingRepository)
+	orderService := services.NewOrderService(orderRepository, walletRepository, *bankListService, escrowService, userAPIService, escrowRepository, *orderMatchingService, assetBookingRepository, *paymentSettingService)
+	coinService := services.NewCoinService(
+		coinRepository,
+		userAPIService,
+		walletService,
+		*assetPriceService,
+		walletRepository,
+		historyService,
+	)
 
 	// Pass the JWT secret key and services to the SetupRoutes function
-	routers.SetupRoutes(router, jwtSecretKey, userService, walletService)
+	routers.SetupRoutes(router, jwtSecretKey, userAPIService, walletService, coinService, orderService)
 
 	// Start the server
 	if err := router.Run(":8014"); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
+	gin.SetMode(gin.ReleaseMode)
 }
