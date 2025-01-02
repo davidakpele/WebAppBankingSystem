@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -138,6 +139,38 @@ public class BankController {
         return Error.createResponse("FORBIDDEN", HttpStatus.FORBIDDEN,
                 "Denied Access");
     }
+
+    @GetMapping("/user/{userId}/bank/{bankId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getUserBankDetailsByUserIdAndBankId(@PathVariable Long userId, @PathVariable Long bankId, Authentication authentication) {
+        String username = authentication.getName();
+        String token = tokenExtractor.extractToken(httpServletRequest);
+        if (token.isBlank() || token.isEmpty()) {
+            return Error.createResponse("UNAUTHORIZED*.",
+                    HttpStatus.UNAUTHORIZED, "Require token to access this endpoint, Missing valid token.");
+        }
+        if (userId ==null || bankId ==null) {
+            return Error.createResponse("Require valid userId and valid bankId in the paramenter*.",
+                    HttpStatus.UNAUTHORIZED, "Missing user id parameter or bank Id paramenter. ");
+        }
+        var userInfo = userServiceClient.getUserByUsername(username, token);
+        if (userInfo.getUsername().equals(username)) {
+            Optional<BankList> banks = bankListService.findUserBankByBankId(bankId, userId);
+            if (banks.isPresent()) {
+                return ResponseEntity.ok(banks.get());
+            } else {
+                return Error.createResponse("Bad Request.",
+                    HttpStatus.BAD_REQUEST, 
+                        "The bankId provided does not match the user - "
+                                + userInfo.getRecords().get(0).getLastName().toUpperCase() + " " + userInfo
+                                        .getRecords().get(0).getFirstName().toUpperCase());
+            }
+        }
+        return Error.createResponse("FORBIDDEN", HttpStatus.FORBIDDEN,
+                "Denied Access");
+    }
+
+
 
     private boolean existAccount(String accountNumber) {
         Optional<BankList> existingUsers = bankListRepository.findByAccountNumber(accountNumber);

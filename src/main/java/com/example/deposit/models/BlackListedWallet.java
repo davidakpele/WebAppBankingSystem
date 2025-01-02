@@ -2,9 +2,12 @@ package com.example.deposit.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.example.deposit.enums.BannedReasons;
 
 @Data
 @Builder
@@ -18,8 +21,15 @@ public class BlackListedWallet {
 
     private Long walletId;
 
-    private String description_reasons;
+    @Enumerated(EnumType.STRING)
+    private BannedReasons bankBannedReasons;
 
+    private Boolean isBlock;
+
+    private BannedReasons actionType;
+
+    private Timestamp timestamp;
+    
     @CreationTimestamp
     private LocalDateTime createdAt;
 

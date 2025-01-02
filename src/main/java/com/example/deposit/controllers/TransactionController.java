@@ -1,6 +1,8 @@
 package com.example.deposit.controllers;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.deposit.responses.Error;
 import com.example.deposit.services.WalletService;
+import com.example.deposit.enums.CurrencyType;
 import com.example.deposit.payloads.ExternalTransactionRequest;
 import com.example.deposit.payloads.TransactionRequest;
 import com.example.deposit.properties.TokenExtractor;
@@ -62,6 +65,13 @@ public class TransactionController {
             return Error.createResponse("Transfer pin is required.", HttpStatus.BAD_REQUEST,
                     "Please provide your transfer pin.");
         }
+
+        if (!Arrays.stream(CurrencyType.values()).anyMatch(ct -> ct.name().equals(request.getCurrencyType().toString().toUpperCase()))) {
+            return Error.createResponse("Invalid Currency provided.*.",
+                    HttpStatus.BAD_REQUEST,
+                    "Please provide Currency type. any of this list (USD, EUR, NGN,GBP, JPY,AUD,CAD, CHF, CNY, OR INR)");
+        }
+        
         return walletService.TransferWithUsernameToUserInSamePlatform(username, request, authentication, token, httpRequest);
     }
     
@@ -87,6 +97,13 @@ public class TransactionController {
                     "Please provide your transfer pin.");
         }
 
+        if (!request.getCurrencyType().toString().isEmpty()
+                || !request.getCurrencyType().toString().isBlank() && !Arrays.stream(CurrencyType.values())
+                        .anyMatch(ct -> ct.name().equals(request.getCurrencyType().toString().toUpperCase()))) {
+            return Error.createResponse("Invalid Currency provided.*.",
+                    HttpStatus.BAD_REQUEST,
+                    "Please provide Currency type. any of this list (USD, EUR, NGN,GBP, JPY,AUD,CAD, CHF, CNY, OR INR)");
+        }
         return walletService.transferToExternalUserOutSidePlatform(username, request, authentication, token, httpRequest);
     }
 

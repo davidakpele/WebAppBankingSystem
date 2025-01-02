@@ -18,4 +18,5 @@ public interface BankListService {
     Optional<List<PayStackBankList>> fetchAllBanks();
 
     Optional<BankList> findUserBankByBankId(Long bankId, Long userId);
+    
 }

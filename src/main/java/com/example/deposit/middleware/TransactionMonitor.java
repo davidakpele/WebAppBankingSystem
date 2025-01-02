@@ -128,7 +128,7 @@ public class TransactionMonitor {
     @SuppressWarnings("deprecation")
     private BigDecimal calculateAverageTransactionAmount(Long userId) {
         List<WalletTransactionHistory> allTransactions = walletTransanctionHistoryRepository
-                .findAllByWallet_UserId(userId);
+                .findByWalletUserId(userId);
 
         // Handle the case where there are no transactions
         if (allTransactions.isEmpty()) {

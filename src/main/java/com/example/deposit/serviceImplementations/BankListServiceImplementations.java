@@ -71,7 +71,6 @@ public class BankListServiceImplementations implements BankListService{
         return Optional.empty();
     }
  
-
     @Override
     public List<BankList> getBankListByUserId(Long id) {
         return bankListRepository.findByUserId(id);
@@ -109,4 +108,5 @@ public class BankListServiceImplementations implements BankListService{
             return Optional.empty();
         }
     }
+
 }

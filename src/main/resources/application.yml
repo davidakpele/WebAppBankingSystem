@@ -72,3 +72,7 @@ auth-service:
 
 revenue-service:
   base-url: http://localhost:8083
+
+logging:
+  level:
+    org.springframework.security: DEBUG

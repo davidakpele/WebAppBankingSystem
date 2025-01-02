@@ -2,6 +2,7 @@ package com.example.deposit.serviceImplementations;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import com.example.deposit.dto.UserDTO;
 import com.example.deposit.dto.UserRecordDTO;
+import com.example.deposit.enums.CurrencyType;
 import com.example.deposit.enums.TransactionMessage;
 import com.example.deposit.enums.TransactionStatus;
 import com.example.deposit.enums.TransactionType;
@@ -41,29 +43,48 @@ public class DepositServiceImplementations implements DepositService{
     private final KeyCollections keyCollections;
     private final WalletNotificationProducer walletNotificationProducer;
 
-    @Override
+   @Override
     public ResponseEntity<?> createDeposit(DepositRequest request, String token, Authentication authentication) {
-        String username = authentication.getName(); 
+        String username = authentication.getName();
         UserDTO user = userServiceClient.getUserByUsername(username, token);
+
         Optional<Wallet> existingWalletOptional = walletRepository.findByUserId(user.getId());
         Optional<BankList> checkBankBelongToRequestUser = bankListRepository.findByAccountNumber(request.getAccountNumber());
+
         if (checkBankBelongToRequestUser.isPresent()) {
             Long userId = Long.parseLong(request.getUserId());
-            if (checkBankBelongToRequestUser.get().getUserId().equals(userId) && user.getId().equals(userId)
-                    && request.getAccountNumber().equals(checkBankBelongToRequestUser.get().getAccountNumber())
-                    && request.getBankCode().equals(checkBankBelongToRequestUser.get().getBankCode())) {
+            BankList bankDetails = checkBankBelongToRequestUser.get();
+
+            if (bankDetails.getUserId().equals(userId) && user.getId().equals(userId)
+                    && request.getAccountNumber().equals(bankDetails.getAccountNumber())
+                    && request.getBankCode().equals(bankDetails.getBankCode())) {
 
                 Wallet wallet;
                 if (existingWalletOptional.isPresent()) {
                     wallet = existingWalletOptional.get();
-                    BigDecimal newBalance = wallet.getBalance().add(request.getAmount());
-                    wallet.setBalance(newBalance);
+
+                    // Ensure wallets for all supported currencies are initialized
+                    initializeAllCurrencyWallets(wallet);
+
+                    // Retrieve the current balance for the specific currency (default to 0 if not found)
+                    BigDecimal currentBalance = wallet.getBalance().getOrDefault(request.getCurrencyType().name(), BigDecimal.ZERO);
+
+                    // Add the deposit amount to the current balance for the given currency
+                    BigDecimal newBalance = currentBalance.add(request.getAmount());
+
+                    // Update the balance in the wallet's balances map for the specified currency
+                    wallet.getBalance().put(request.getCurrencyType().name(), newBalance);
                 } else {
-                    // if user does not have account of wallet where user balance is store, then create one
+                    // Create a new wallet and initialize balances for all supported currencies
                     wallet = new Wallet();
                     wallet.setUserId(user.getId());
-                    wallet.setBalance(request.getAmount());
+                    wallet.setBalance(new HashMap<>());
+                    initializeAllCurrencyWallets(wallet);
+
+                    // Update the balance for the specific currency
+                    wallet.getBalance().put(request.getCurrencyType().name(), request.getAmount());
                 }
+
                 try {
                     // Initialize payment with Paystack
                     String paymentResponse = paystackService
@@ -71,9 +92,9 @@ public class DepositServiceImplementations implements DepositService{
                     ObjectMapper mapper = new ObjectMapper();
                     JsonNode rootNode = mapper.readTree(paymentResponse);
                     String authorizationUrl = rootNode.path("data").path("authorization_url").asText();
-                    // Save userAuthenticationDetailsRecord
+
+                    // Create and save the transaction record
                     Long uniqueId = keyCollections.createSnowflakeUniqueId();
-                    // Create and save the transaction
                     String formattedTransactionType = Refactory.formatEnumValue(TransactionType.BANK_TO_WALLET_DEPOST);
 
                     WalletTransactionHistory transaction = new WalletTransactionHistory();
@@ -82,49 +103,54 @@ public class DepositServiceImplementations implements DepositService{
                     transaction.setSessionId(keyCollections.generateSessionId());
                     transaction.setAmount(request.getAmount());
                     transaction.setType(request.getType());
+                    transaction.setCurrencyType(request.getCurrencyType());
                     transaction.setDescription(formattedTransactionType);
                     transaction.setMessage(TransactionMessage.Successful.toString());
                     transaction.setStatus(TransactionStatus.Success.toString());
-                    // Save the wallet
+
+                    // Save the wallet and transaction history
                     walletRepository.save(wallet);
-                    // save history
                     walletTransanctionHistoryRepository.save(transaction);
 
                     UserDTO fromUser = userServiceClient.getUserById(userId, token);
-
                     String senderEmail = fromUser.getEmail();
                     LocalDateTime transactionTime = LocalDateTime.now();
 
-                    // Extract firstName and lastName separately from the UserRecordDTO list
+                    // Notification
                     String firstName = fromUser.getRecords().stream()
                             .findFirst()
                             .map(UserRecordDTO::getFirstName)
                             .orElse("Unknown");
 
-                    // notification
-                    walletNotificationProducer.sendDepositWalletNotification(senderEmail, firstName, request.getAmount(), transactionTime, existingWalletOptional.get().getBalance());
+                    walletNotificationProducer.sendDepositWalletNotification(senderEmail, firstName,
+                            request.getAmount(), transactionTime,
+                            wallet.getBalance().get(request.getCurrencyType().name()));
 
                     return ResponseEntity.status(HttpStatus.CREATED).body(authorizationUrl);
                 } catch (JsonProcessingException e) {
-                    return Error.createResponse("Payment initialization failed",
-                            HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+                    return Error.createResponse("Payment initialization failed", HttpStatus.INTERNAL_SERVER_ERROR,
+                            e.getMessage());
                 }
             } else {
-                return Error.createResponse("Sorry..! Invalid Card Details",
-                        HttpStatus.FORBIDDEN,
-                        "The card deposit details you process for deposit does not match any of your card details in the system.");
+                return Error.createResponse("Sorry..! Invalid Card Details", HttpStatus.FORBIDDEN,
+                        "The card deposit details you process for deposit do not match any of your card details in the system.");
             }
-           
         }
-        return Error.createResponse("Sorry..! fraudulent attempt detect on this request.",
-                HttpStatus.FORBIDDEN,
-                "The Bank account you're attempting on moving money from does not belong to you.\n Any one more attempt your account will be banned and we will send your profile to the anti-crime agency.");
+        return Error.createResponse("Sorry..! fraudulent attempt detected on this request.", HttpStatus.FORBIDDEN,
+                "The Bank account you're attempting to move money from does not belong to you. Any more attempts, your account will be banned, and we will send your profile to the anti-crime agency.");
     }
+
 
     public static String capitalizeFirstLetter(String input) {
         return input == null || input.isEmpty()
                 ? input
                 : input.transform(s -> s.substring(0, 1).toUpperCase() + s.substring(1));
+    }
+
+    private void initializeAllCurrencyWallets(Wallet wallet) {
+        for (CurrencyType currencyType : CurrencyType.values()) {
+            wallet.getBalance().putIfAbsent(currencyType.name(), BigDecimal.ZERO);
+        }
     }
 
 }

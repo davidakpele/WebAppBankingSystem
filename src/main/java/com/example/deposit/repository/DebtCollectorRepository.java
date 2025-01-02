@@ -24,4 +24,8 @@ public interface DebtCollectorRepository extends JpaRepository<DebtCollector, Lo
     @Query("DELETE FROM DebtCollector d WHERE d.userId IN :userIds")
     void deleteByUserIds(@Param("userIds") List<Long> userIds);
 
+    @Query(value = "SELECT dc FROM DebtCollector dc WHERE dc.debtStatus=:pending AND dc.currencyType=:currencyType AND dc.userId =:userId")
+    Optional<DebtCollector> findByUserIdAndCurrencyTypeAndDebtStatus(Long userId, String currencyType,
+            DebtStatus pending);
+
 }

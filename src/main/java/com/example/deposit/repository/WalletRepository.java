@@ -17,8 +17,14 @@ public interface WalletRepository extends JpaRepository<Wallet, Long> {
 
     @Query("SELECT n FROM Wallet n WHERE n.userId = :userId")
     Wallet findWalletByUserId(@Param("userId") Long userId);
+    
+    @Query(value = "SELECT w.* FROM wallet w JOIN wallet_balances wb ON w.id = wb.wallet_id WHERE w.user_id = :userId AND wb.currency_code = :currencyCode", nativeQuery = true)
+    Wallet findWalletByUserIdAndCurrencyCode(@Param("userId") Long userId, @Param("currencyCode") String currencyCode);
 
     @Modifying
     @Query("DELETE FROM Wallet w WHERE w.userId IN :userIds")
     void deleteUserByIds(@Param("userIds") List<Long> userIds);
+
+    @Query("SELECT n FROM Wallet n WHERE n.userId = :userId")
+    List<Wallet> findByUserIdList(Long userId);
 }

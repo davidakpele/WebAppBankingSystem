@@ -34,15 +34,22 @@ public class DepositController {
         if (token.isBlank() || token.isEmpty()) {
             return Error.createResponse("UNAUTHORIZED*.",
                     HttpStatus.UNAUTHORIZED, "Require token to access this endpoint, Missing valid token.");
-        }        
-        if (request.getType().equals(TransactionType.DEPOSIT)) {
-            return depositService.createDeposit(request, token, authentication);
         }
 
         if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return Error.createResponse("Amount is required and must be greater than zero.", HttpStatus.BAD_REQUEST,
                     "Please provide a valid amount you want to deposit.");
         }
+        
+        if (request.getCurrencyType() == null || request.getCurrencyType().toString().isEmpty()) {
+            return Error.createResponse("Currency type is require.*", HttpStatus.BAD_REQUEST,
+                    "Please provide the currency type you want deposit, e.g 'USD OR NGN'");
+        }
+        
+        if (request.getType().equals(TransactionType.DEPOSIT)) {
+            return depositService.createDeposit(request, token, authentication);
+        }
+
         return Error.createResponse("Wrong Transaction format.", HttpStatus.BAD_REQUEST,
                 "please change the transaction Type to Deposit");
     }

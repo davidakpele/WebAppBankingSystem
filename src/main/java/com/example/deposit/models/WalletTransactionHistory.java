@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.example.deposit.enums.CurrencyType;
 import com.example.deposit.enums.TransactionType;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Data
@@ -32,12 +34,18 @@ public class WalletTransactionHistory {
     private String description;
 
     private String message;
+     
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CurrencyType currencyType; 
 
     private String status;
 
     @Column(name = "ip_address", length = 45)
     private String ipAddress;
 
+    private Timestamp timestamp;
+    
     @CreationTimestamp
     private LocalDateTime createdOn;
 

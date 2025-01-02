@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.example.deposit.enums.CurrencyType;
 import com.example.deposit.enums.DebtStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "debt_collector")
 public class DebtCollector {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,10 +33,16 @@ public class DebtCollector {
     private DebtStatus debtStatus;
 
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CurrencyType currencyType; 
+
     @CreationTimestamp
     private LocalDateTime createdOn;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @UpdateTimestamp
     private LocalDateTime updatedOn;
+
 }
